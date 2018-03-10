@@ -2,8 +2,6 @@ package info.markovy.pma;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,8 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,6 +34,7 @@ import info.movito.themoviedbapi.model.core.MovieResultsPage;
 public class MovieListActivity extends AppCompatActivity {
 
     private static final String TAG = "MovieListActivity";
+    private static final java.lang.String KEY_STATE = "KEY_STATE";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -46,6 +43,13 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesViewModel viewModel;
     private MoviesPageRecyclerViewAdapter adapter;
     private SwitchCompat switchCompat;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_STATE, viewModel.getState().getValue());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,16 +58,6 @@ public class MovieListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-
-
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                viewModel.revertState();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
 
         if (findViewById(R.id.movie_detail_container) != null) {
             // The detail container view will be present only in the
@@ -77,11 +71,12 @@ public class MovieListActivity extends AppCompatActivity {
         assert recyclerView != null;
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
         observeViewModel(viewModel);
-        //TODO set savedState
-        viewModel.setState(false);
-
+        boolean bInitialState = false;
+        if(savedInstanceState!=null){
+            bInitialState = savedInstanceState.getBoolean(KEY_STATE, false);
+        }
+        viewModel.setState(bInitialState);
         setupRecyclerView((RecyclerView) recyclerView);
-
     }
 
     @Override
@@ -130,8 +125,7 @@ public class MovieListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-
-        adapter = new MoviesPageRecyclerViewAdapter(this, viewModel.getMovies().getValue(), mTwoPane);
+        adapter = new MoviesPageRecyclerViewAdapter(this, viewModel.getMovies().getValue());
         recyclerView.setAdapter(adapter);
     }
 
@@ -160,7 +154,6 @@ public class MovieListActivity extends AppCompatActivity {
         }
 
         private MovieResultsPage mPage;
-        private final boolean mTwoPane;
 
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
@@ -171,11 +164,9 @@ public class MovieListActivity extends AppCompatActivity {
         };
 
         MoviesPageRecyclerViewAdapter(MovieListActivity parent,
-                                      MovieResultsPage page,
-                                      boolean twoPane) {
+                                      MovieResultsPage page) {
             mPage = page;
             mParentActivity = parent;
-            mTwoPane = twoPane;
         }
 
         @Override
