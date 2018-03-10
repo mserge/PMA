@@ -2,6 +2,7 @@ package info.markovy.pma;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -111,6 +113,9 @@ public class MovieListActivity extends AppCompatActivity {
                     adapter.setMovieResults(results);
                     adapter.notifyDataSetChanged();
                     Log.d(TAG, "Recieved results:" + results.toString());
+                    if(mTwoPane && results != null && results.getResults() != null){
+                        onMovieSelect( results.getResults().get(0));
+                    }
                 }
             }
         });
@@ -131,13 +136,15 @@ public class MovieListActivity extends AppCompatActivity {
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         adapter = new MoviesPageRecyclerViewAdapter(this, viewModel.getMovies().getValue());
         recyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),mTwoPane ? 1: 3);
+        int viewWidth = recyclerView.getMeasuredWidth();
+        Log.d(TAG, "Width is measured to: " + String.valueOf(viewWidth));
+        RecyclerView.LayoutManager layoutManager = new GridAutofitLayoutManager(getApplicationContext(), 320);
         recyclerView.setLayoutManager(layoutManager);
 
         recyclerView.setAdapter(adapter);
     }
 
-    private void onMovieSelect(View view, MovieDb movie) {
+    private void onMovieSelect( MovieDb movie) {
         viewModel.setCurrentMovie(movie);
         MovieDetailFragment fragment = new MovieDetailFragment();
         if (mTwoPane) {
@@ -167,7 +174,7 @@ public class MovieListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 MovieDb movie = (MovieDb) view.getTag();
-                mParentActivity.onMovieSelect(view, movie);
+                mParentActivity.onMovieSelect(movie);
             }
         };
 
@@ -219,6 +226,71 @@ public class MovieListActivity extends AppCompatActivity {
                 mContentView = (TextView) view.findViewById(R.id.content);
                 mImageView = view.findViewById(R.id.image_poster);
             }
+        }
+    }
+
+    public class GridAutofitLayoutManager extends GridLayoutManager
+    {
+        private int mColumnWidth;
+        private boolean mColumnWidthChanged = true;
+
+        public GridAutofitLayoutManager(Context context, int columnWidth)
+        {
+        /* Initially set spanCount to 1, will be changed automatically later. */
+            super(context, 1);
+            setColumnWidth(checkedColumnWidth(context, columnWidth));
+        }
+
+        public GridAutofitLayoutManager(Context context, int columnWidth, int orientation, boolean reverseLayout)
+        {
+        /* Initially set spanCount to 1, will be changed automatically later. */
+            super(context, 1, orientation, reverseLayout);
+            setColumnWidth(checkedColumnWidth(context, columnWidth));
+        }
+
+        private int checkedColumnWidth(Context context, int columnWidth)
+        {
+            if (columnWidth <= 0)
+            {
+            /* Set default columnWidth value (48dp here). It is better to move this constant
+            to static constant on top, but we need context to convert it to dp, so can't really
+            do so. */
+                columnWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48,
+                        context.getResources().getDisplayMetrics());
+            }
+            return columnWidth;
+        }
+
+        public void setColumnWidth(int newColumnWidth)
+        {
+            if (newColumnWidth > 0 && newColumnWidth != mColumnWidth)
+            {
+                mColumnWidth = newColumnWidth;
+                mColumnWidthChanged = true;
+            }
+        }
+
+        @Override
+        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state)
+        {
+            int width = getWidth();
+            int height = getHeight();
+            if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0)
+            {
+                int totalSpace;
+                if (getOrientation() == VERTICAL)
+                {
+                    totalSpace = width - getPaddingRight() - getPaddingLeft();
+                }
+                else
+                {
+                    totalSpace = height - getPaddingTop() - getPaddingBottom();
+                }
+                int spanCount = Math.max(1, totalSpace / mColumnWidth);
+                setSpanCount(spanCount);
+                mColumnWidthChanged = false;
+            }
+            super.onLayoutChildren(recycler, state);
         }
     }
 }
