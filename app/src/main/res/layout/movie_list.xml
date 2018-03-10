@@ -6,8 +6,7 @@
     android:name="info.markovy.pma.MovieListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    app:layoutManager="LinearLayoutManager"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
     tools:context="info.markovy.pma.MovieListActivity"
     tools:listitem="@layout/movie_list_content" />

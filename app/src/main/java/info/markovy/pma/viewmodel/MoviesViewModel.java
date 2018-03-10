@@ -18,7 +18,7 @@ public class MoviesViewModel extends ViewModel {
     private MutableLiveData<Boolean> mCurrentState = new MutableLiveData<Boolean>();;
     // TODO make injection via some other way
     final private MoviesRepository mRepository = MoviesRepository.getInstance();
-
+    //TODO implement Loading/Error handling via https://developer.android.com/topic/libraries/architecture/guide.html#addendum
     public final LiveData<MovieResultsPage> mMovies =
             Transformations.switchMap(mCurrentState, (state) -> {
                 return mRepository.geMovies(mCurrentState);

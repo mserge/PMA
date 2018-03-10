@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
@@ -16,8 +17,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+
+import com.squareup.picasso.Picasso;
 
 import info.markovy.pma.viewmodel.MoviesViewModel;
 import info.movito.themoviedbapi.model.MovieDb;
@@ -126,6 +130,10 @@ public class MovieListActivity extends AppCompatActivity {
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         adapter = new MoviesPageRecyclerViewAdapter(this, viewModel.getMovies().getValue());
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),mTwoPane ? 1: 3);
+        recyclerView.setLayoutManager(layoutManager);
+
         recyclerView.setAdapter(adapter);
     }
 
@@ -180,14 +188,19 @@ public class MovieListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             if(mPage != null && mPage.getResults() != null) {
                 MovieDb movie = mPage.getResults().get(position);
-                holder.mIdView.setText(String.valueOf(movie.getId()));
+                //holder.mIdView.setText(String.valueOf(movie.getId()));
                 holder.mContentView.setText(movie.getTitle());
-
+                Picasso.get().load(getURL(movie.getPosterPath())).into(holder.mImageView);
                 holder.itemView.setTag(movie);
                 holder.itemView.setOnClickListener(mOnClickListener);
             } else {
                 Log.d(TAG, "Empty results set.");
             }
+        }
+
+                // https://image.tmdb.org/t/p/w185_and_h278_bestv2/zvQqY4ksXtB6HEjjewsH3DQzI6g.jpg
+        public String getURL(String posterPath) {
+            return "https://image.tmdb.org/t/p/w185_and_h278_bestv2/" + posterPath;
         }
 
         @Override
@@ -198,11 +211,13 @@ public class MovieListActivity extends AppCompatActivity {
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView mIdView;
             final TextView mContentView;
+            final ImageView mImageView;
 
             ViewHolder(View view) {
                 super(view);
                 mIdView = (TextView) view.findViewById(R.id.id_text);
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mImageView = view.findViewById(R.id.image_poster);
             }
         }
     }

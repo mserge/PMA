@@ -14,7 +14,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import info.markovy.pma.viewmodel.MoviesViewModel;
 import info.movito.themoviedbapi.model.MovieDb;
@@ -65,7 +68,10 @@ public class MovieDetailFragment extends Fragment {
 
         return rootView;
     }
-
+   // https://image.tmdb.org/t/p/w1400_and_h450_face/2SEgJ0mHJ7TSdVDbkGU061tR33K.jpg
+    public String getURL(String posterPath) {
+        return "https://image.tmdb.org/t/p/w1400_and_h450_face/" + posterPath;
+    }
     private void observeViewModel(MoviesViewModel viewModel) {
         // Update the list when the data changes
 
@@ -81,7 +87,8 @@ public class MovieDetailFragment extends Fragment {
                     if (appBarLayout != null) {
                         appBarLayout.setTitle(movie.getTitle());
                     }
-
+                    ImageView backDropImage = (ImageView) getView().findViewById(R.id.backdrop);
+                    Picasso.get().load(getURL(movie.getBackdropPath())).into(backDropImage);
                     // Show the dummy content as text in a TextView.
                     ((TextView) getView().findViewById(R.id.movie_detail)).setText(movie.getOverview());
                 }

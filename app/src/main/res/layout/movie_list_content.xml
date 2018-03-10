@@ -1,20 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
-
-    <TextView
-        android:id="@+id/id_text"
+    <!-- A CardView that contains a TextView -->
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:textAppearance="?attr/textAppearanceListItem" />
+        android:layout_gravity="center"
+        android:layout_margin="2dp"
+        card_view:cardCornerRadius="4dp">
 
-    <TextView
-        android:id="@+id/content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:textAppearance="?attr/textAppearanceListItem" />
+        <TextView
+            android:id="@+id/id_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:shadowColor="@color/colorPrimaryDark"
+            />
+
+        <ImageView
+            android:id="@+id/image_poster"
+            android:layout_width="178dp"
+            android:layout_height="278dp"
+            android:layout_gravity="center_horizontal"
+            android:adjustViewBounds="false"
+            android:cropToPadding="true" />
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="@dimen/text_margin"
+            android:background="#40FFFFFF"
+            android:textAlignment="center"
+            android:textAppearance="?attr/textAppearanceListItem"
+            tools:text="Test text title " />
+    </android.support.v7.widget.CardView>
+
+
+
 </LinearLayout>
