@@ -91,6 +91,8 @@ public class MovieDetailFragment extends Fragment {
                     Picasso.get().load(getURL(movie.getBackdropPath())).into(backDropImage);
                     // Show the dummy content as text in a TextView.
                     ((TextView) getView().findViewById(R.id.movie_detail)).setText(movie.getOverview());
+                    ((TextView) getView().findViewById(R.id.movie_rating)).setText(getString(R.string.movie_detail_rating_text, movie.getVoteAverage()));
+                    ((TextView) getView().findViewById(R.id.movie_release_date)).setText(getString(R.string.movie_detail_release_text, movie.getReleaseDate()));
                 }
             }
         });

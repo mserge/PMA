@@ -1,6 +1,8 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Popular Movies App</string>
     <string name="title_movie_detail">Movie Detail</string>
     <string name="title_popular">Popular</string>
     <string name="title_top_rated">Top rated</string>
+    <string name="movie_detail_rating_text">User rating: <xliff:g id="rating_number" example="100.123">%1$.2f</xliff:g> </string>
+    <string name="movie_detail_release_text">Release date: %1s </string>
 </resources>
