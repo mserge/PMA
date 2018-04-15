@@ -18,14 +18,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 
 import com.squareup.picasso.Picasso;
 
 import info.markovy.pma.viewmodel.MoviesViewModel;
+import info.markovy.pma.viewmodel.ShowModes;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
 
@@ -48,12 +51,23 @@ public class MovieListActivity extends AppCompatActivity {
     private boolean mTwoPane;
     private MoviesViewModel viewModel;
     private MoviesPageRecyclerViewAdapter adapter;
-    private SwitchCompat switchCompat;
+    private Spinner switchCompat;
+//    TODO: Change COmbobox to 3 state
+//    TODO: Change ViewModel to reflect 3 state
+//    TODO: Pass new starred / unstarred item to VM
+//    TODO: STore temporary starred item
+//    TODO: Pass temporary starred list
+//    TODO: Show starred list
+//    TODO: Pass starred status
+//    TODO: Add content provider
+//    TODO: Persist starred list
+//    TODO: Load starred list with Contentprovider
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_STATE, viewModel.getState().getValue());
+        outState.putInt(KEY_STATE, viewModel.getState().getValue().getValue());
     }
 
     @Override
@@ -63,7 +77,7 @@ public class MovieListActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+//        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         if (findViewById(R.id.movie_detail_container) != null) {
             // The detail container view will be present only in the
@@ -77,11 +91,13 @@ public class MovieListActivity extends AppCompatActivity {
         assert recyclerView != null;
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
         observeViewModel(viewModel);
-        boolean bInitialState = false;
+        int bInitialState = 0;
         if(savedInstanceState!=null){
-            bInitialState = savedInstanceState.getBoolean(KEY_STATE, false);
+            bInitialState = savedInstanceState.getInt(KEY_STATE, 0);
+            Log.d(TAG, "From saved state " + bInitialState);
+
         }
-        viewModel.setState(bInitialState);
+        viewModel.setState(ShowModes.from(bInitialState));
         setupRecyclerView((RecyclerView) recyclerView);
     }
 
@@ -91,12 +107,18 @@ public class MovieListActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         MenuItem item = menu.findItem(R.id.switch_mode);
         item.setActionView(R.layout.switch_layout);
-        switchCompat = item.getActionView().findViewById(R.id.switchForActionBar);
-        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        switchCompat = item.getActionView().findViewById(R.id.spinner);
+        switchCompat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                Log.d(TAG, "Clicked " + b);
-                viewModel.setState(b);
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG, "Selected " + i);
+                // Note that list should match enums from ShowModes
+               viewModel.setState(ShowModes.from(i));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
             }
         });
         return true;
@@ -108,8 +130,7 @@ public class MovieListActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable MovieResultsPage results) {
                 if (results != null) {
-                    //…
-                    //projectAdapter.setProjectList(projects);
+
                     adapter.setMovieResults(results);
                     adapter.notifyDataSetChanged();
                     Log.d(TAG, "Recieved results:" + results.toString());
@@ -119,15 +140,19 @@ public class MovieListActivity extends AppCompatActivity {
                 }
             }
         });
-        viewModel.getState().observe(this, new Observer<Boolean>() {
+        viewModel.getState().observe(this, new Observer<ShowModes>() {
             @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                if(switchCompat!= null) switchCompat.setChecked(aBoolean);
-                if(aBoolean){
-                    setTitle(getString(R.string.title_popular));
-                } else{
-                    setTitle(getString(R.string.title_top_rated));
-                }
+            public void onChanged(@Nullable ShowModes mode) {
+            // TODO fix state change
+                Log.d(TAG, mode.toString());
+
+                if(switchCompat!= null) switchCompat.setSelection(mode.getValue());
+//                if(aBoolean){
+////                    setTitle(getString(R.string.title_popular));
+//
+//                } else{
+//                    setTitle(getString(R.string.title_top_rated));
+//                }
 
             }
         });

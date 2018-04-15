@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import info.markovy.pma.BuildConfig;
+import info.markovy.pma.viewmodel.ShowModes;
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.model.MovieDb;
@@ -27,7 +28,7 @@ public class MoviesRepository {
         return instance;
     }
 
-    public LiveData<MovieResultsPage> geMovies(MutableLiveData<Boolean> state) {
+    public LiveData<MovieResultsPage> geMovies(MutableLiveData<ShowModes> state) {
         final MutableLiveData<MovieResultsPage> data = new MutableLiveData<>();
         // TODO implement caching
         new AsyncTask<Void, Void, MovieResultsPage>(){
@@ -44,15 +45,23 @@ public class MoviesRepository {
 
                 try {
                     TmdbMovies movies = new TmdbApi(apiKey).getMovies();
-                    MovieResultsPage results;
-                    if(state.getValue().booleanValue()){
-                        results = movies.getPopularMovies(LANG, 0);
-                    } else
-                    {
-                        results = movies.getTopRatedMovies(LANG, 0);
+                    MovieResultsPage results ;
+                    switch (state.getValue()) {
+                        case POPULAR:
+                            results = movies.getPopularMovies(LANG, 0);
+                            break;
+                        case TOP:
+                            results = movies.getTopRatedMovies(LANG, 0);
+                            break;
+                        case STARRED:
+                            // TODO implement starred
+                            results = null;
+                            break;
+                        default:
+                                results = null;
+                                break;
                     }
-
-                    Log.d(TAG, "Total is: " + results.getTotalResults());
+                    Log.d(TAG, results != null ? "Total is: " + results.getTotalResults() : "Empty");
                     return results;
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
