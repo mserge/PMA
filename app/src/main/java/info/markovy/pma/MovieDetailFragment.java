@@ -86,12 +86,13 @@ public class MovieDetailFragment extends Fragment {
         viewModel.getCurrentMovie().observe(this, new Observer<MovieDb>() {
             @Override
             public void onChanged(@Nullable MovieDb movie) {
+                Activity activity = getActivity();
+                CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+                View container = activity.findViewById(R.id.movie_detail_container);
                 if (movie != null) {
-
+                    container.setVisibility(View.VISIBLE);
                     Log.d(TAG, "Recieved movie:" + movie.toString());
 
-                    Activity activity = getActivity();
-                    CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
                     if (appBarLayout != null) {
                         appBarLayout.setTitle(movie.getTitle());
                     }
@@ -101,6 +102,13 @@ public class MovieDetailFragment extends Fragment {
                     ((TextView) getView().findViewById(R.id.movie_detail)).setText(movie.getOverview());
                     ((TextView) getView().findViewById(R.id.movie_rating)).setText(getString(R.string.movie_detail_rating_text, movie.getVoteAverage()));
                     ((TextView) getView().findViewById(R.id.movie_release_date)).setText(getString(R.string.movie_detail_release_text, movie.getReleaseDate()));
+                } else {
+                    Log.d(TAG, "No movie loaded");
+                    if (appBarLayout != null) {
+                        appBarLayout.setTitle(getString(R.string.no_data_available));
+                    }
+                    if(container!=null) container.setVisibility(View.GONE);
+
                 }
             }
         });

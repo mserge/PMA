@@ -51,6 +51,7 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesViewModel viewModel;
     private MoviesPageRecyclerViewAdapter adapter;
     private Spinner switchCompat;
+    private TextView txtNoData;
     private int bInitialState;
 
 
@@ -82,7 +83,7 @@ public class MovieListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-
+        txtNoData = findViewById(R.id.txt_nodata);
         View recyclerView = findViewById(R.id.movie_list);
         assert recyclerView != null;
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
@@ -128,7 +129,7 @@ public class MovieListActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable UIMoviesList results) {
                 if (results != null) {
-
+                    txtNoData.setVisibility(View.GONE);
                     adapter.setMovieResults(results);
                     adapter.notifyDataSetChanged();
                     Log.d(TAG, "Recieved results:" + results.toString());
@@ -137,6 +138,7 @@ public class MovieListActivity extends AppCompatActivity {
                     }
                 } else {
                     // no data recieved
+                    txtNoData.setVisibility(View.VISIBLE);
                 }
             }
         });
