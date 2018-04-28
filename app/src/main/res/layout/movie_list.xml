@@ -8,5 +8,6 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="4dp"
     android:layout_marginRight="4dp"
+    android:theme="@style/AppTheme"
     tools:context="info.markovy.pma.MovieListActivity"
     tools:listitem="@layout/movie_list_content" />

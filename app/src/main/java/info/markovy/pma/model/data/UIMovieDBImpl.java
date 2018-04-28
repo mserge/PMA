@@ -4,16 +4,11 @@ import info.movito.themoviedbapi.model.MovieDb;
 
 public class UIMovieDBImpl implements UIMovie {
     MovieDb dblink;
-    boolean isStarred = false;
 
-    public UIMovieDBImpl(MovieDb dblink, boolean isStarred ) {
-        this.dblink = dblink;
-        this.isStarred = isStarred;
-    }
+
 
     public UIMovieDBImpl(MovieDb db) {
         dblink = db;
-        isStarred = false;
     }
 
     @Override
@@ -37,8 +32,5 @@ public class UIMovieDBImpl implements UIMovie {
         return dblink.getId();
     }
 
-    @Override
-    public boolean isStarred() {
-        return isStarred;
-    }
+
 }

@@ -52,10 +52,7 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesPageRecyclerViewAdapter adapter;
     private Spinner switchCompat;
 
-//    TODO: Pass new starred / unstarred item to VM
-//    TODO: STore temporary starred item
-//    TODO: Pass temporary starred list
-//    TODO: Show starred list
+
 //    TODO: Pass starred status
 //    TODO: Add content provider
 //    TODO: Persist starred list

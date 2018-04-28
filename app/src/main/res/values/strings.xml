@@ -5,6 +5,7 @@
     <string name="title_top_rated">Top rated</string>
     <string name="movie_detail_rating_text">User rating: <xliff:g id="rating_number" example="100.123">%1$.2f</xliff:g> </string>
     <string name="movie_detail_release_text">Release date: %1s </string>
+    <string name="make_favorite">Make favorite</string>
     <string-array name="choices">
         <item>Popular</item>
         <item>Top rated</item>

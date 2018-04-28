@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -66,7 +67,13 @@ public class MovieDetailFragment extends Fragment {
                getActivity().onBackPressed();
             }
         });
-
+        Button button = rootView.findViewById(R.id.btn_set_favorite);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewModel.setCurrentFavorite();
+            }
+        });
         return rootView;
     }
    // https://image.tmdb.org/t/p/w1400_and_h450_face/2SEgJ0mHJ7TSdVDbkGU061tR33K.jpg

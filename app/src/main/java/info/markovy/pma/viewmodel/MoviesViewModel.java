@@ -31,14 +31,14 @@ public class MoviesViewModel extends ViewModel {
 
 
     public void setCurrentMovie(UIMovie movie) {
-        currentMovie.setValue(mRepository.getMovie(movie));
+        currentMovie = mRepository.getMovie(movie);
     }
 
-    public MutableLiveData<MovieDb> getCurrentMovie() {
+    public LiveData<MovieDb> getCurrentMovie() {
         return currentMovie;
     }
 
-    private  MutableLiveData<MovieDb> currentMovie = new MutableLiveData<>();
+    private LiveData<MovieDb> currentMovie = new MutableLiveData<>();
 
     public LiveData<UIMoviesList> getMovies() {
         return mMovies;
@@ -51,4 +51,8 @@ public class MoviesViewModel extends ViewModel {
     public MutableLiveData<ShowModes> getState() {
         return mCurrentState;
     }
- }
+
+    public void setCurrentFavorite() {
+        mRepository.addFavoriteMovie(currentMovie.getValue());
+    }
+}

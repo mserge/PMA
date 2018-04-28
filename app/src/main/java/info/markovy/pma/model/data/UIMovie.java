@@ -7,6 +7,5 @@ public interface UIMovie {
 
     public int getId();
 
-    public boolean isStarred();
 
 }
