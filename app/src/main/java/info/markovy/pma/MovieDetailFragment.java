@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.graphics.Movie;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -14,15 +15,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import info.markovy.pma.model.data.UIMovie;
 import info.markovy.pma.viewmodel.MoviesViewModel;
 import info.movito.themoviedbapi.model.MovieDb;
+import info.movito.themoviedbapi.model.Reviews;
 
 /**
  * A fragment representing a single Movie detail screen.
@@ -102,6 +109,13 @@ public class MovieDetailFragment extends Fragment {
                     ((TextView) getView().findViewById(R.id.movie_detail)).setText(movie.getOverview());
                     ((TextView) getView().findViewById(R.id.movie_rating)).setText(getString(R.string.movie_detail_rating_text, movie.getVoteAverage()));
                     ((TextView) getView().findViewById(R.id.movie_release_date)).setText(getString(R.string.movie_detail_release_text, movie.getReleaseDate()));
+                    if( movie.getReviews() != null) {
+                        Log.d(TAG, "Reviews: " + movie.getReviews().size());
+                        ListView lvReviews = getView().findViewById(R.id.movie_reviews_list);
+                        lvReviews.setAdapter(new ReviewsAdapter(getContext(), movie.getReviews()));
+                    }
+                    if( movie.getVideos() != null)
+                         Log.d(TAG, "Trailers: " + movie.getVideos().size());
                 } else {
                     Log.d(TAG, "No movie loaded");
                     if (appBarLayout != null) {
@@ -112,5 +126,44 @@ public class MovieDetailFragment extends Fragment {
                 }
             }
         });
+    }
+    //TODO RendererRecyclerViewAdapter
+    class ReviewsAdapter extends ArrayAdapter<Reviews> {
+        // View lookup cache
+        private class ViewHolder {
+            TextView name;
+            TextView content;
+        }
+
+        public ReviewsAdapter(Context context, List<Reviews> reviews) {
+            super(context, R.layout.item_reviews, reviews);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            // Get the data item for this position
+            Reviews reviews = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            ViewHolder viewHolder; // view lookup cache stored in tag
+            if (convertView == null) {
+                // If there's no view to re-use, inflate a brand new view for row
+                viewHolder = new ViewHolder();
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(R.layout.item_reviews, parent, false);
+                viewHolder.name = (TextView) convertView.findViewById(R.id.review_tv_name);
+                viewHolder.content = (TextView) convertView.findViewById(R.id.review_tv_content);
+                // Cache the viewHolder object inside the fresh view
+                convertView.setTag(viewHolder);
+            } else {
+                // View is being recycled, retrieve the viewHolder object from tag
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+            // Populate the data from the data object via the viewHolder object
+            // into the template view.
+            viewHolder.name.setText(reviews.getAuthor());
+            viewHolder.content.setText(reviews.getContent());
+            // Return the completed view to render on screen
+            return convertView;
+        }
     }
 }

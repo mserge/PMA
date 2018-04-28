@@ -55,12 +55,6 @@ public class MovieListActivity extends AppCompatActivity {
     private int bInitialState;
 
 
-//    TODO: Pass starred status
-//    TODO: Add content provider
-//    TODO: Persist starred list
-//    TODO: Load starred list with Contentprovider
-
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -104,7 +98,6 @@ public class MovieListActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.switch_mode);
         item.setActionView(R.layout.switch_layout);
         switchCompat = item.getActionView().findViewById(R.id.spinner);
-        // TODO setup initial value from onCreate
         switchCompat.setSelection(bInitialState);
         bInitialState = -1;
         switchCompat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -145,7 +138,6 @@ public class MovieListActivity extends AppCompatActivity {
         viewModel.getState().observe(this, new Observer<ShowModes>() {
             @Override
             public void onChanged(@Nullable ShowModes mode) {
-            // TODO fix state change on default load
                 Log.d(TAG, mode.toString());
 
                 if(switchCompat!= null) switchCompat.setSelection(mode.getValue());

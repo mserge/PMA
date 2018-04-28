@@ -88,6 +88,25 @@ app:layout_behavior="@string/appbar_scrolling_view_behavior" >
         android:textIsSelectable="true"
         tools:context="info.markovy.pma.MovieDetailFragment"
         tools:text="Release date"/>
+
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/reviews_header"
+        android:text="Reviews"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+
+    <ListView
+        android:layout_margin="8dp"
+        android:id="@+id/movie_reviews_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+    </ListView>
 </LinearLayout>
 </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

@@ -63,11 +63,10 @@ public class MoviesRepository {
 
                 try {
                     TmdbMovies movies;
-                    UIMoviesList results ;
+                    UIMoviesList results;
                     switch (state.getValue()) {
                         case POPULAR:
                             movies = new TmdbApi(apiKey).getMovies();
-                            // TODO Implement proxy
                             results = new UIMoviesListResultPageImpl(movies.getPopularMovies(LANG, 0));
                             break;
                         case TOP:
@@ -75,7 +74,6 @@ public class MoviesRepository {
                             results = new UIMoviesListResultPageImpl(movies.getTopRatedMovies(LANG, 0));
                             break;
                         case STARRED:
-                            // TODO implement starred
                             results = new UIMoviesListStored(LoadFavorites(cr));
                             break;
                         default:
@@ -98,11 +96,12 @@ public class MoviesRepository {
     // TODO replace to LIveData
     public LiveData<MovieDb> getMovie(UIMovie movie) {
         final MutableLiveData<MovieDb> data = new MutableLiveData<>();
+        // First we sent data we have
         if(movie instanceof UIMovieDBImpl) {
            data.setValue(((UIMovieDBImpl) movie).getDblink());
         }
-        //  implement load for POJO
-        if(movie instanceof  UIMovieStored){
+        //  then we load more detailed data with reviews and videos for both preloaded and saved movies
+//        if(movie instanceof  UIMovieStored){
             new AsyncTask<Integer, Void, MovieDb>(){
                 @Override
                 protected void onPostExecute(MovieDb movieDb) {
@@ -114,14 +113,14 @@ public class MoviesRepository {
                     try {
                         final String apiKey = BuildConfig.API_KEY;
                         TmdbMovies movies = new TmdbApi(apiKey).getMovies();
-                        return movies.getMovie(ids[0], LANG);
+                        return movies.getMovie(ids[0], LANG, TmdbMovies.MovieMethod.videos, TmdbMovies.MovieMethod.reviews);
                     } catch (Exception e){
                         Log.e(TAG, "Exception when getMovie " + e.getMessage());
                         return null;
                     }
                 }
             }.execute(movie.getId());
-        }
+ //       }
         return data;
     }
 

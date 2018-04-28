@@ -27,7 +27,6 @@ public class MoviesViewModel extends AndroidViewModel {
     final private MoviesRepository mRepository = MoviesRepository.getInstance();
     //TODO implement Loading/Error handling via https://developer.android.com/topic/libraries/architecture/guide.html#addendum
     public final LiveData<UIMoviesList> mMovies =
-            // TODO 1 - change to
             Transformations.switchMap(mCurrentState, (state) -> {
                 return mRepository.geMovies(mCurrentState, getApplication().getContentResolver());
             });
