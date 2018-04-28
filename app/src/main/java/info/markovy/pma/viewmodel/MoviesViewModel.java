@@ -1,9 +1,12 @@
 package info.markovy.pma.viewmodel;
 
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
+import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +21,7 @@ import info.movito.themoviedbapi.model.MovieDb;
  * Created by mserge on 10.03.2018.
  */
 
-public class MoviesViewModel extends ViewModel {
+public class MoviesViewModel extends AndroidViewModel {
     private MutableLiveData<ShowModes> mCurrentState = new MutableLiveData<ShowModes>();;
     // TODO make injection via some other way
     final private MoviesRepository mRepository = MoviesRepository.getInstance();
@@ -26,8 +29,12 @@ public class MoviesViewModel extends ViewModel {
     public final LiveData<UIMoviesList> mMovies =
             // TODO 1 - change to
             Transformations.switchMap(mCurrentState, (state) -> {
-                return mRepository.geMovies(mCurrentState);
+                return mRepository.geMovies(mCurrentState, getApplication().getContentResolver());
             });
+
+    public MoviesViewModel(@NonNull Application application) {
+        super(application);
+    }
 
 
     public void setCurrentMovie(UIMovie movie) {
@@ -53,6 +60,6 @@ public class MoviesViewModel extends ViewModel {
     }
 
     public void setCurrentFavorite() {
-        mRepository.addFavoriteMovie(currentMovie.getValue());
+        mRepository.addFavoriteMovie(currentMovie.getValue(), getApplication().getContentResolver());
     }
 }

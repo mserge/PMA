@@ -51,6 +51,7 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesViewModel viewModel;
     private MoviesPageRecyclerViewAdapter adapter;
     private Spinner switchCompat;
+    private int bInitialState;
 
 
 //    TODO: Pass starred status
@@ -86,7 +87,7 @@ public class MovieListActivity extends AppCompatActivity {
         assert recyclerView != null;
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
         observeViewModel(viewModel);
-        int bInitialState = 0;
+        bInitialState = 0;
         if(savedInstanceState!=null){
             bInitialState = savedInstanceState.getInt(KEY_STATE, 0);
             Log.d(TAG, "From saved state " + bInitialState);
@@ -103,6 +104,8 @@ public class MovieListActivity extends AppCompatActivity {
         item.setActionView(R.layout.switch_layout);
         switchCompat = item.getActionView().findViewById(R.id.spinner);
         // TODO setup initial value from onCreate
+        switchCompat.setSelection(bInitialState);
+        bInitialState = -1;
         switchCompat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -132,6 +135,8 @@ public class MovieListActivity extends AppCompatActivity {
                     if(mTwoPane && results != null && results.getResults() != null){
                         onMovieSelect( results.getResults().get(0));
                     }
+                } else {
+                    // no data recieved
                 }
             }
         });
@@ -142,12 +147,7 @@ public class MovieListActivity extends AppCompatActivity {
                 Log.d(TAG, mode.toString());
 
                 if(switchCompat!= null) switchCompat.setSelection(mode.getValue());
-//                if(aBoolean){
-////                    setTitle(getString(R.string.title_popular));
-//
-//                } else{
-//                    setTitle(getString(R.string.title_top_rated));
-//                }
+                if(!mTwoPane) getSupportFragmentManager().popBackStack();
 
             }
         });

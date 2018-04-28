@@ -11,4 +11,6 @@
         <item>Top rated</item>
         <item>Starred</item>
     </string-array>
+    <string name="content_authority">info.markovy.pma</string>
+
 </resources>
