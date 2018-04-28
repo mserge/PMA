@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import info.markovy.pma.model.MoviesRepository;
+import info.markovy.pma.model.data.UIMovie;
+import info.markovy.pma.model.data.UIMoviesList;
 import info.movito.themoviedbapi.model.MovieDb;
-import info.movito.themoviedbapi.model.core.MovieResultsPage;
+
 
 /**
  * Created by mserge on 10.03.2018.
@@ -21,15 +23,15 @@ public class MoviesViewModel extends ViewModel {
     // TODO make injection via some other way
     final private MoviesRepository mRepository = MoviesRepository.getInstance();
     //TODO implement Loading/Error handling via https://developer.android.com/topic/libraries/architecture/guide.html#addendum
-    public final LiveData<MovieResultsPage> mMovies =
+    public final LiveData<UIMoviesList> mMovies =
             // TODO 1 - change to
             Transformations.switchMap(mCurrentState, (state) -> {
                 return mRepository.geMovies(mCurrentState);
             });
 
 
-    public void setCurrentMovie(MovieDb movie) {
-        currentMovie.setValue(movie);
+    public void setCurrentMovie(UIMovie movie) {
+        currentMovie.setValue(mRepository.getMovie(movie));
     }
 
     public MutableLiveData<MovieDb> getCurrentMovie() {
@@ -38,7 +40,7 @@ public class MoviesViewModel extends ViewModel {
 
     private  MutableLiveData<MovieDb> currentMovie = new MutableLiveData<>();
 
-    public LiveData<MovieResultsPage> getMovies() {
+    public LiveData<UIMoviesList> getMovies() {
         return mMovies;
     }
 

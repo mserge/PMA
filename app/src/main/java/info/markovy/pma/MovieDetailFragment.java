@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import info.markovy.pma.model.data.UIMovie;
 import info.markovy.pma.viewmodel.MoviesViewModel;
 import info.movito.themoviedbapi.model.MovieDb;
 

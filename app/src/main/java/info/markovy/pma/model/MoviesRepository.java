@@ -6,11 +6,14 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import info.markovy.pma.BuildConfig;
+import info.markovy.pma.model.data.UIMovie;
+import info.markovy.pma.model.data.UIMovieDBImpl;
+import info.markovy.pma.model.data.UIMoviesList;
+import info.markovy.pma.model.data.UIMoviesListResultPageImpl;
 import info.markovy.pma.viewmodel.ShowModes;
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.model.MovieDb;
-import info.movito.themoviedbapi.model.core.MovieResultsPage;
 
 /**
  * Created by mserge on 10.03.2018.
@@ -28,30 +31,31 @@ public class MoviesRepository {
         return instance;
     }
 
-    public LiveData<MovieResultsPage> geMovies(MutableLiveData<ShowModes> state) {
-        final MutableLiveData<MovieResultsPage> data = new MutableLiveData<>();
+    public LiveData<UIMoviesList> geMovies(MutableLiveData<ShowModes> state) {
+        final MutableLiveData<UIMoviesList> data = new MutableLiveData<>();
         // TODO implement caching
-        new AsyncTask<Void, Void, MovieResultsPage>(){
+        new AsyncTask<Void, Void, UIMoviesList>(){
 
             @Override
-            protected void onPostExecute(MovieResultsPage moviesResult) {
+            protected void onPostExecute(UIMoviesList moviesResult) {
                 data.setValue(moviesResult);
             }
 
             @Override
-            protected MovieResultsPage doInBackground(Void... voids) {
+            protected UIMoviesList doInBackground(Void... voids) {
                 final String apiKey = BuildConfig.API_KEY;
                 Log.d(TAG, "Using API key" + apiKey);
 
                 try {
                     TmdbMovies movies = new TmdbApi(apiKey).getMovies();
-                    MovieResultsPage results ;
+                    UIMoviesList results ;
                     switch (state.getValue()) {
                         case POPULAR:
-                            results = movies.getPopularMovies(LANG, 0);
+                            // TODO Implement proxy
+                            results = new UIMoviesListResultPageImpl(movies.getPopularMovies(LANG, 0));
                             break;
                         case TOP:
-                            results = movies.getTopRatedMovies(LANG, 0);
+                            results = new UIMoviesListResultPageImpl(movies.getTopRatedMovies(LANG, 0));
                             break;
                         case STARRED:
                             // TODO implement starred
@@ -73,5 +77,13 @@ public class MoviesRepository {
         }.execute();
 
         return data;
+    }
+    // TODO replace to LIveData
+    public MovieDb getMovie(UIMovie movie) {
+        if(movie instanceof UIMovieDBImpl) {
+            return ((UIMovieDBImpl) movie).getDblink();
+        }
+        // TODO implement load for POJO
+        return null;
     }
 }

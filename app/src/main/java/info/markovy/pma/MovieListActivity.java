@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
@@ -19,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,10 +25,11 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import info.markovy.pma.model.data.UIMovie;
 import info.markovy.pma.viewmodel.MoviesViewModel;
 import info.markovy.pma.viewmodel.ShowModes;
 import info.movito.themoviedbapi.model.MovieDb;
-import info.movito.themoviedbapi.model.core.MovieResultsPage;
+import info.markovy.pma.model.data.UIMoviesList;
 
 /**
  * An activity representing a list of Movies. This activity
@@ -52,8 +51,7 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesViewModel viewModel;
     private MoviesPageRecyclerViewAdapter adapter;
     private Spinner switchCompat;
-//    TODO: Change COmbobox to 3 state
-//    TODO: Change ViewModel to reflect 3 state
+
 //    TODO: Pass new starred / unstarred item to VM
 //    TODO: STore temporary starred item
 //    TODO: Pass temporary starred list
@@ -95,7 +93,6 @@ public class MovieListActivity extends AppCompatActivity {
         if(savedInstanceState!=null){
             bInitialState = savedInstanceState.getInt(KEY_STATE, 0);
             Log.d(TAG, "From saved state " + bInitialState);
-
         }
         viewModel.setState(ShowModes.from(bInitialState));
         setupRecyclerView((RecyclerView) recyclerView);
@@ -108,6 +105,7 @@ public class MovieListActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.switch_mode);
         item.setActionView(R.layout.switch_layout);
         switchCompat = item.getActionView().findViewById(R.id.spinner);
+        // TODO setup initial value from onCreate
         switchCompat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -126,9 +124,9 @@ public class MovieListActivity extends AppCompatActivity {
 
     private void observeViewModel(MoviesViewModel viewModel) {
         // Update the list when the data changes
-        viewModel.getMovies().observe(this, new Observer<MovieResultsPage>() {
+        viewModel.getMovies().observe(this, new Observer<UIMoviesList>() {
             @Override
-            public void onChanged(@Nullable MovieResultsPage results) {
+            public void onChanged(@Nullable UIMoviesList results) {
                 if (results != null) {
 
                     adapter.setMovieResults(results);
@@ -143,7 +141,7 @@ public class MovieListActivity extends AppCompatActivity {
         viewModel.getState().observe(this, new Observer<ShowModes>() {
             @Override
             public void onChanged(@Nullable ShowModes mode) {
-            // TODO fix state change
+            // TODO fix state change on default load
                 Log.d(TAG, mode.toString());
 
                 if(switchCompat!= null) switchCompat.setSelection(mode.getValue());
@@ -169,7 +167,7 @@ public class MovieListActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private void onMovieSelect( MovieDb movie) {
+    private void onMovieSelect(UIMovie movie) {
         viewModel.setCurrentMovie(movie);
         MovieDetailFragment fragment = new MovieDetailFragment();
         if (mTwoPane) {
@@ -189,22 +187,22 @@ public class MovieListActivity extends AppCompatActivity {
 
         private final MovieListActivity mParentActivity;
 
-        public void setMovieResults(MovieResultsPage mPage) {
+        public void setMovieResults(UIMoviesList mPage) {
             this.mPage = mPage;
         }
 
-        private MovieResultsPage mPage;
+        private UIMoviesList mPage;
 
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MovieDb movie = (MovieDb) view.getTag();
+                UIMovie movie = (UIMovie) view.getTag();
                 mParentActivity.onMovieSelect(movie);
             }
         };
 
         MoviesPageRecyclerViewAdapter(MovieListActivity parent,
-                                      MovieResultsPage page) {
+                                      UIMoviesList page) {
             mPage = page;
             mParentActivity = parent;
         }
@@ -219,7 +217,7 @@ public class MovieListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             if(mPage != null && mPage.getResults() != null) {
-                MovieDb movie = mPage.getResults().get(position);
+                UIMovie movie = mPage.getResults().get(position);
                 //holder.mIdView.setText(String.valueOf(movie.getId()));
                 holder.mContentView.setText(movie.getTitle());
                 Picasso.get().load(getURL(movie.getPosterPath())).into(holder.mImageView);
