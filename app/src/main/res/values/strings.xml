@@ -13,5 +13,7 @@
     </string-array>
     <string name="content_authority">info.markovy.pma</string>
     <string name="no_data_available">No data available</string>
+    <string name="available_reviews">Reviews</string>
+    <string name="videos_available">Videos (%1d)</string>
 
 </resources>
