@@ -121,18 +121,17 @@ public class MovieListActivity extends AppCompatActivity {
         viewModel.getMovies().observe(this, new Observer<UIMoviesList>() {
             @Override
             public void onChanged(@Nullable UIMoviesList results) {
-                if (results != null) {
+                if (results != null &&  results.getResults() != null &&  results.getResults().size() > 0) {
                     txtNoData.setVisibility(View.GONE);
-                    adapter.setMovieResults(results);
-                    adapter.notifyDataSetChanged();
-                    Log.d(TAG, "Recieved results:" + results.toString());
-                    if(mTwoPane && results != null && results.getResults() != null){
+                    if(mTwoPane){
                         onMovieSelect( results.getResults().get(0));
                     }
                 } else {
                     // no data recieved
                     txtNoData.setVisibility(View.VISIBLE);
                 }
+                adapter.setMovieResults(results);
+                adapter.notifyDataSetChanged();
             }
         });
         viewModel.getState().observe(this, new Observer<ShowModes>() {

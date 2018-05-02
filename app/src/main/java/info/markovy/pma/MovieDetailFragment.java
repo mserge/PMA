@@ -125,7 +125,7 @@ public class MovieDetailFragment extends Fragment {
                 CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
                 View container = activity.findViewById(R.id.movie_detail_container);
                 if (movie != null) {
-                    container.setVisibility(View.VISIBLE);
+                    if(container != null) container.setVisibility(View.VISIBLE);
                     Log.d(TAG, "Recieved movie:" + movie.toString());
 
                     if (appBarLayout != null) {

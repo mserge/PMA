@@ -14,5 +14,14 @@ Get information from:
   * [Add switch to toolbar](https://stackoverflow.com/questions/44514444/radio-button-style-in-menu-with-toolbar-not-working)
   * [Switch detection](https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener)
   * [Grid Auto Column](https://stackoverflow.com/questions/26666143/recyclerview-gridlayoutmanager-how-to-auto-detect-span-count/30256880#comment62202844_30256880)
+
 To compile:
   * Add API_KEY into secrets.properties file that retrieved from [The Movie Database API](https://developers.themoviedb.org)
+
+For stage 2 I have implemented:
+  * Usage of Spinner and saving the choosen sort state
+  * [RendererRecyclerViewAdapter](https://github.com/vivchar/RendererRecyclerViewAdapter)
+  * Data stored in SQLlite using Content provider
+  * I have stored only data for list, the data for details is alwasys loaded
+ 
+  
