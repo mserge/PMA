@@ -93,16 +93,14 @@ public class MoviesRepository {
 
         return data;
     }
-    // TODO replace to LIveData
-    public LiveData<MovieDb> getMovie(UIMovie movie) {
-        final MutableLiveData<MovieDb> data = new MutableLiveData<>();
+
+    public void getMovie(UIMovie movie, MutableLiveData<MovieDb> data) {
         // First we sent data we have
         if(movie instanceof UIMovieDBImpl) {
            data.setValue(((UIMovieDBImpl) movie).getDblink());
         }
         //  then we load more detailed data with reviews and videos for both preloaded and saved movies
-//        if(movie instanceof  UIMovieStored){
-            new AsyncTask<Integer, Void, MovieDb>(){
+       new AsyncTask<Integer, Void, MovieDb>(){
                 @Override
                 protected void onPostExecute(MovieDb movieDb) {
                     data.setValue(movieDb);
@@ -120,8 +118,6 @@ public class MoviesRepository {
                     }
                 }
             }.execute(movie.getId());
- //       }
-        return data;
     }
 
     public void addFavoriteMovie(MovieDb value, ContentResolver cr) {

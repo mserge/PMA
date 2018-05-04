@@ -121,6 +121,12 @@ public class MovieDetailFragment extends Fragment {
         viewModel.getCurrentMovie().observe(this, new Observer<MovieDb>() {
             @Override
             public void onChanged(@Nullable MovieDb movie) {
+                Log.d(TAG, "Movie changed to " + ( movie == null ? "empty" : movie.getTitle()));
+
+                if(movie == null) {
+                    Log.e(TAG, "Dow we have issues with Fragment clean?");
+                    return; // ignore clean
+                }
                 Activity activity = getActivity();
                 CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
                 View container = activity.findViewById(R.id.movie_detail_container);
@@ -133,11 +139,11 @@ public class MovieDetailFragment extends Fragment {
                     }
                     ImageView backDropImage = (ImageView) getView().findViewById(R.id.backdrop);
                     Picasso.get().load(getURL(movie.getBackdropPath())).into(backDropImage);
-                    // Show the dummy content as text in a TextView.
                     mRecyclerViewAdapter.setItems(getMovieDetailItems(movie));
                     mRecyclerViewAdapter.notifyDataSetChanged();
 
                 } else {
+                    // Show the dummy content as text in a TextView.
                     Log.d(TAG, "No movie loaded");
                     if (appBarLayout != null) {
                         appBarLayout.setTitle(getString(R.string.no_data_available));
@@ -174,6 +180,8 @@ public class MovieDetailFragment extends Fragment {
                     list.add(new MoviesYoutubeVideo(video));
                 }
             }
+        }  else {
+            list.add(new MoviesDetailItem(-1, "No videos/trailers available."));
         }
 
         return  list;

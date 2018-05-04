@@ -37,14 +37,17 @@ public class MoviesViewModel extends AndroidViewModel {
 
 
     public void setCurrentMovie(UIMovie movie) {
-        currentMovie = mRepository.getMovie(movie);
+        if(movie != null)
+             mRepository.getMovie(movie, currentMovie);
+        else
+            currentMovie.setValue(null);
     }
 
     public LiveData<MovieDb> getCurrentMovie() {
         return currentMovie;
     }
 
-    private LiveData<MovieDb> currentMovie = new MutableLiveData<>();
+    private MutableLiveData<MovieDb> currentMovie = new MutableLiveData<>();
 
     public LiveData<UIMoviesList> getMovies() {
         return mMovies;
@@ -52,6 +55,7 @@ public class MoviesViewModel extends AndroidViewModel {
 
     public void setState(ShowModes state){
         mCurrentState.setValue(state);
+        currentMovie.setValue(null);
     }
 
     public MutableLiveData<ShowModes> getState() {

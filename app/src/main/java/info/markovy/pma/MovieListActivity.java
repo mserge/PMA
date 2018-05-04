@@ -4,8 +4,10 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -43,6 +45,7 @@ public class MovieListActivity extends AppCompatActivity {
 
     private static final String TAG = "MovieListActivity";
     private static final java.lang.String KEY_STATE = "KEY_STATE";
+    private static final String KEY_POSITION = "KEY_POSITION";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -53,12 +56,15 @@ public class MovieListActivity extends AppCompatActivity {
     private Spinner switchCompat;
     private TextView txtNoData;
     private int bInitialState;
+    private RecyclerView.LayoutManager layoutManager;
 
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_STATE, viewModel.getState().getValue().getValue());
+        if(layoutManager !=null)
+           outState.putParcelable(KEY_POSITION, layoutManager.onSaveInstanceState());
     }
 
     @Override
@@ -82,13 +88,17 @@ public class MovieListActivity extends AppCompatActivity {
         assert recyclerView != null;
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
         observeViewModel(viewModel);
+        setupRecyclerView((RecyclerView) recyclerView);
         bInitialState = 0;
         if(savedInstanceState!=null){
             bInitialState = savedInstanceState.getInt(KEY_STATE, 0);
             Log.d(TAG, "From saved state " + bInitialState);
+            Parcelable parcelable = savedInstanceState.getParcelable(KEY_POSITION);
+            if(parcelable != null && layoutManager !=null)
+                layoutManager.onRestoreInstanceState(parcelable);
         }
         viewModel.setState(ShowModes.from(bInitialState));
-        setupRecyclerView((RecyclerView) recyclerView);
+
     }
 
     @Override
@@ -123,7 +133,7 @@ public class MovieListActivity extends AppCompatActivity {
             public void onChanged(@Nullable UIMoviesList results) {
                 if (results != null &&  results.getResults() != null &&  results.getResults().size() > 0) {
                     txtNoData.setVisibility(View.GONE);
-                    if(mTwoPane){
+                    if(mTwoPane && viewModel.getCurrentMovie().getValue() == null){
                         onMovieSelect( results.getResults().get(0));
                     }
                 } else {
@@ -138,10 +148,46 @@ public class MovieListActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable ShowModes mode) {
                 Log.d(TAG, mode.toString());
-
+                // if state changed we change our Spinner
                 if(switchCompat!= null) switchCompat.setSelection(mode.getValue());
+                // we're going close fragment if opnened
                 if(!mTwoPane) getSupportFragmentManager().popBackStack();
+                // and we scroll to top (as no sense to keep old position)
+                if(layoutManager!=null) layoutManager.scrollToPosition(0);
 
+
+            }
+        });
+        viewModel.getCurrentMovie().observe(this, new Observer<MovieDb>() {
+            @Override
+            public void onChanged(@Nullable MovieDb movie) {
+                Log.d(TAG, " Activity Movie changed to " +( movie == null ? "empty" : movie.getTitle()));
+              if(movie != null){
+                  MovieDetailFragment fragment = new MovieDetailFragment();
+                  if (mTwoPane) {
+                      getSupportFragmentManager().beginTransaction()
+                              .replace(R.id.movie_detail_container, fragment)
+                              .commit();
+                  } else {
+                      getSupportFragmentManager().popBackStack();
+                      getSupportFragmentManager().beginTransaction()
+                              .replace(R.id.frameLayout, fragment)
+                              .addToBackStack(null)
+                              .commit();
+                      // listen for backstack change as proposed at https://developer.android.com/training/implementing-navigation/temporal
+//                      getSupportFragmentManager().addOnBackStackChangedListener(
+//                              new FragmentManager.OnBackStackChangedListener() {
+//                                  public void onBackStackChanged() {
+//                                      // Update your UI here.
+//                                      Log.d(TAG, "Backstack changed - clean!  - " + getFragmentManager().getBackStackEntryCount());
+//                                     // onMovieSelect(null); // clear model
+//                                  }
+//                              });
+                  }
+
+              } else {
+                //  if (!mTwoPane) getSupportFragmentManager().popBackStack();
+              }
             }
         });
     }
@@ -151,7 +197,7 @@ public class MovieListActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         int viewWidth = recyclerView.getMeasuredWidth();
         Log.d(TAG, "Width is measured to: " + String.valueOf(viewWidth));
-        RecyclerView.LayoutManager layoutManager = new GridAutofitLayoutManager(getApplicationContext(), 320);
+        layoutManager = new GridAutofitLayoutManager(getApplicationContext(), 320);
         recyclerView.setLayoutManager(layoutManager);
 
         recyclerView.setAdapter(adapter);
@@ -159,17 +205,6 @@ public class MovieListActivity extends AppCompatActivity {
 
     private void onMovieSelect(UIMovie movie) {
         viewModel.setCurrentMovie(movie);
-        MovieDetailFragment fragment = new MovieDetailFragment();
-        if (mTwoPane) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.movie_detail_container, fragment)
-                    .commit();
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frameLayout, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
     }
 
     public static class MoviesPageRecyclerViewAdapter
