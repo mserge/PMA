@@ -1,5 +1,6 @@
 package info.markovy.pma;
 
+import android.app.Fragment;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -46,6 +47,7 @@ public class MovieListActivity extends AppCompatActivity {
     private static final String TAG = "MovieListActivity";
     private static final java.lang.String KEY_STATE = "KEY_STATE";
     private static final String KEY_POSITION = "KEY_POSITION";
+    private static final String BACKSTACK_TAG = "BACKSTACK_TAG";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -55,14 +57,13 @@ public class MovieListActivity extends AppCompatActivity {
     private MoviesPageRecyclerViewAdapter adapter;
     private Spinner switchCompat;
     private TextView txtNoData;
-    private int bInitialState;
     private RecyclerView.LayoutManager layoutManager;
+    private boolean initSelection = false;
 
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(KEY_STATE, viewModel.getState().getValue().getValue());
         if(layoutManager !=null)
            outState.putParcelable(KEY_POSITION, layoutManager.onSaveInstanceState());
     }
@@ -89,16 +90,32 @@ public class MovieListActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
         observeViewModel(viewModel);
         setupRecyclerView((RecyclerView) recyclerView);
-        bInitialState = 0;
+        if(viewModel.getState().getValue() == null ) { // first run - set default mode
+                viewModel.getState().setValue(ShowModes.POPULAR);
+        }
         if(savedInstanceState!=null){
-            bInitialState = savedInstanceState.getInt(KEY_STATE, 0);
-            Log.d(TAG, "From saved state " + bInitialState);
             Parcelable parcelable = savedInstanceState.getParcelable(KEY_POSITION);
             if(parcelable != null && layoutManager !=null)
                 layoutManager.onRestoreInstanceState(parcelable);
         }
-        viewModel.setState(ShowModes.from(bInitialState));
 
+        if(viewModel.getCurrentMovie().getValue() != null){
+            navigateMovie();
+        }
+        // listen for backstack change as proposed at https://developer.android.com/training/implementing-navigation/temporal
+        getSupportFragmentManager().addOnBackStackChangedListener(
+                  new FragmentManager.OnBackStackChangedListener() {
+                      public void onBackStackChanged() {
+                          // Update your UI here.
+                          android.support.v4.app.Fragment fragmentByTag = getSupportFragmentManager().findFragmentByTag(BACKSTACK_TAG);
+                          if(fragmentByTag!=null){
+                              Log.d(TAG, "Fragment tag found");
+                          } else if(!mTwoPane){
+                              Log.d(TAG, "Fragment not found, cleaning Viewmodel");
+                            viewModel.setCurrentMovie(null); // clear model
+                          }
+                      }
+                  });
     }
 
     @Override
@@ -108,14 +125,20 @@ public class MovieListActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.switch_mode);
         item.setActionView(R.layout.switch_layout);
         switchCompat = item.getActionView().findViewById(R.id.spinner);
-        switchCompat.setSelection(bInitialState);
-        bInitialState = -1;
+        switchCompat.setSelection(viewModel.getState().getValue().getValue());
         switchCompat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(TAG, "Selected " + i);
                 // Note that list should match enums from ShowModes
-               viewModel.setState(ShowModes.from(i));
+                // first selection after restart should be ignored once (it's triggered after init)
+                if (initSelection) {
+                    Log.d(TAG, "Selected " + i);
+                    viewModel.setState(ShowModes.from(i));
+
+                } else {
+                    Log.d(TAG, "Selection ignored " + i);
+                    initSelection = true;
+                }
             }
 
             @Override
@@ -134,6 +157,7 @@ public class MovieListActivity extends AppCompatActivity {
                 if (results != null &&  results.getResults() != null &&  results.getResults().size() > 0) {
                     txtNoData.setVisibility(View.GONE);
                     if(mTwoPane && viewModel.getCurrentMovie().getValue() == null){
+                        // TODO may be we should select at scrolled position??
                         onMovieSelect( results.getResults().get(0));
                     }
                 } else {
@@ -147,15 +171,11 @@ public class MovieListActivity extends AppCompatActivity {
         viewModel.getState().observe(this, new Observer<ShowModes>() {
             @Override
             public void onChanged(@Nullable ShowModes mode) {
-                Log.d(TAG, mode.toString());
+                Log.d(TAG, "New mode selected" + mode.toString());
                 // if state changed we change our Spinner
                 if(switchCompat!= null) switchCompat.setSelection(mode.getValue());
-                // we're going close fragment if opnened
-                if(!mTwoPane) getSupportFragmentManager().popBackStack();
                 // and we scroll to top (as no sense to keep old position)
                 if(layoutManager!=null) layoutManager.scrollToPosition(0);
-
-
             }
         });
         viewModel.getCurrentMovie().observe(this, new Observer<MovieDb>() {
@@ -163,33 +183,27 @@ public class MovieListActivity extends AppCompatActivity {
             public void onChanged(@Nullable MovieDb movie) {
                 Log.d(TAG, " Activity Movie changed to " +( movie == null ? "empty" : movie.getTitle()));
               if(movie != null){
-                  MovieDetailFragment fragment = new MovieDetailFragment();
-                  if (mTwoPane) {
-                      getSupportFragmentManager().beginTransaction()
-                              .replace(R.id.movie_detail_container, fragment)
-                              .commit();
-                  } else {
-                      getSupportFragmentManager().popBackStack();
-                      getSupportFragmentManager().beginTransaction()
-                              .replace(R.id.frameLayout, fragment)
-                              .addToBackStack(null)
-                              .commit();
-                      // listen for backstack change as proposed at https://developer.android.com/training/implementing-navigation/temporal
-//                      getSupportFragmentManager().addOnBackStackChangedListener(
-//                              new FragmentManager.OnBackStackChangedListener() {
-//                                  public void onBackStackChanged() {
-//                                      // Update your UI here.
-//                                      Log.d(TAG, "Backstack changed - clean!  - " + getFragmentManager().getBackStackEntryCount());
-//                                     // onMovieSelect(null); // clear model
-//                                  }
-//                              });
-                  }
-
+                    Log.d(TAG, "New movie value recieved");
               } else {
-                //  if (!mTwoPane) getSupportFragmentManager().popBackStack();
+                  Log.d(TAG, "Empty value recieved");
+                   if (!mTwoPane) getSupportFragmentManager().popBackStack();
               }
             }
         });
+    }
+
+    private void navigateMovie() {
+        MovieDetailFragment fragment = new MovieDetailFragment();
+        if (mTwoPane) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment)
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frameLayout, fragment, BACKSTACK_TAG)
+                    .addToBackStack(BACKSTACK_TAG)
+                    .commit();
+        }
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -199,12 +213,12 @@ public class MovieListActivity extends AppCompatActivity {
         Log.d(TAG, "Width is measured to: " + String.valueOf(viewWidth));
         layoutManager = new GridAutofitLayoutManager(getApplicationContext(), 320);
         recyclerView.setLayoutManager(layoutManager);
-
         recyclerView.setAdapter(adapter);
     }
 
     private void onMovieSelect(UIMovie movie) {
         viewModel.setCurrentMovie(movie);
+        navigateMovie();
     }
 
     public static class MoviesPageRecyclerViewAdapter

@@ -122,7 +122,6 @@ public class MoviesRepository {
 
     public void addFavoriteMovie(MovieDb value, ContentResolver cr) {
         //TODO check for duplicates when adding and implement ContentProvider
-        //favorites.add(new UIMovieStored(value.getTitle(), value.getPosterPath(), value.getId()));
 
         ContentValues values = new ContentValues();
         values.put(MovieContract.MoviesEntry.COLUMN_ID, value.getId());
